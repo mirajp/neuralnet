@@ -1,4 +1,5 @@
 wdbc.init
 wdbc.train
 myfull.output
-
+100
+0.1

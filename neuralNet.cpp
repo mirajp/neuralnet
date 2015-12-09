@@ -58,9 +58,14 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 	inputFile >> drop;
 	for (int epoch = 0; epoch < numEpochs; epoch++) {
 		for (int exIter = 0; exIter < numExamples; exIter++) {
-			// fill deltas to 0 after each example
+			// reset deltas to 0 after each example
 			fill(hiddenDeltas.begin(), hiddenDeltas.end(), 0);
 			fill(outputDeltas.begin(), outputDeltas.end(), 0);
+			fill(inputActivations.begin(), inputActivations.end(), 0);
+			fill(hiddenActivations.begin(), hiddenActivations.end(), 0);
+			fill(outputActivations.begin(), outputActivations.end(), 0);
+			inputActivations[0] = -1;
+			hiddenActivations[0] = -1;
 			
 			// Get a single example: vector of inputs and outputs
 			std::vector <int> exampleYs;
@@ -106,7 +111,7 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 			}
 			
 			// Propogate deltas for the hidden layer
-			for (int hiddenIter = 0; hiddenIter <= numHidden; hiddenIter++) {
+			for (int hiddenIter = 1; hiddenIter <= numHidden; hiddenIter++) {
 				double sum = 0;
 				for (int outputIter = 0; outputIter < numOutput; outputIter++) {
 					sum += (outputWeights[outputIter][hiddenIter] * outputDeltas[outputIter]);
