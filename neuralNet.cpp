@@ -11,9 +11,9 @@
 #include <iomanip>
 #include <cmath>
 
-NeuralNetwork::NeuralNetwork(std::ifstream &inputFile, int numEpochs, double learningRate) {
-	numEpochs = numEpochs;
-	learningRate = learningRate;
+NeuralNetwork::NeuralNetwork(std::ifstream &inputFile, int epochs, double rate) {
+	this->numEpochs = epochs;
+	this->learningRate = rate;
 	
 	// This input file initializes the parameters and weights of the new neural network
 	inputFile >> numInput;
@@ -57,14 +57,17 @@ NeuralNetwork::NeuralNetwork(std::ifstream &inputFile, int numEpochs, double lea
 
 void NeuralNetwork::train(std::ifstream &inputFile) {
 	std::cout << "Inside train" << std::endl;
+	std::cout << "Inside train" << std::endl;
+	std::cout << "Inside train" << std::endl;
 	// Back-Prop-Learning pseudocode implementation
 	// This assumes the network's weights have been initialized, and a training file is fed in to train the weights
 	int numExamples;
 	inputFile >> numExamples;
+    std::cout << "Numepochs = " << numEpochs << std::endl;
 	for (int epoch = 0; epoch < numEpochs; epoch++) {
 		for (int exIter = 0; exIter < numExamples; exIter++) {
 			// Get a single example: vector of inputs and outputs
-			std::cout << "Example # " << exIter+1 << std::endl;
+			std::cout << "Example # " << (exIter+1) << std::endl;
 			std::vector <double> exampleXs;
 			std::vector <int> exampleYs;
 			double exX;
@@ -103,15 +106,15 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 				outputActivations[outputIter] = sigmoid(sum);
 			}
 			
-			std::cout << "Before outputDelta update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
+			//std::cout << "Before outputDelta update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
 			// Propogate deltas backward from output layer to input layer
 			for (int outputIter = 0; outputIter < numOutput; outputIter++) {
 				//outputDeltas[outputIter] = derivSigmoid(outputActivations[outputIter])*(exampleYs[outputIter] - outputActivations[outputIter]);
 				outputDeltas[outputIter] = (outputActivations[outputIter]*(1-outputActivations[outputIter]))*(exampleYs[outputIter] - outputActivations[outputIter]);
-				std::cout << "outputDelta[" << outputIter << "] = " << outputDeltas[outputIter] << std::endl;
+				//std::cout << "outputDelta[" << outputIter << "] = " << outputDeltas[outputIter] << std::endl;
 			}
 			
-			std::cout << "Before hiddenDelta update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
+			//std::cout << "Before hiddenDelta update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
 			// Propogate deltas for the hidden layer
 			for (int hiddenIter = 0; hiddenIter <= numHidden; hiddenIter++) {
 				double sum = 0;
@@ -122,17 +125,17 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 			}
 			
 			// Update weights
-			std::cout << "Before hiddenweight update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
+			//std::cout << "Before hiddenweight update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
 			for (int inputIter = 0; inputIter <= numInput; inputIter++) {
 				for (int hiddenIter = 0; hiddenIter < numHidden; hiddenIter++) {
 					hiddenWeights[hiddenIter][inputIter] = hiddenWeights[hiddenIter][inputIter] + (learningRate*inputActivations[inputIter]*hiddenDeltas[hiddenIter]);
 				}
 			}
 			
-			std::cout << "Before outputweight update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
+			//std::cout << "Before outputweight update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
 			for (int hiddenIter = 0; hiddenIter <= numHidden; hiddenIter++) {
 				for (int outputIter = 0; outputIter < numOutput; outputIter++) {
-					std::cout << "hiddenAct[0] = " << hiddenActivations[0] << std::endl;
+					//std::cout << "hiddenAct[0] = " << hiddenActivations[0] << std::endl;
 					outputWeights[outputIter][hiddenIter] = outputWeights[outputIter][hiddenIter] + (learningRate*hiddenActivations[hiddenIter]*outputDeltas[outputIter]);
 				}
 			}
