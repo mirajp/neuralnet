@@ -25,7 +25,7 @@ int main() {
 	cout << "Enter a name for the output file:" << endl;
 	cin >> output;
 	cout << "Enter a positive integer for # of epochs:" << endl;
-	getline(cin, input);
+	cin >> input;
 	numEpochs = atoi(input.c_str());
 	while (numEpochs <= 0) {
 		cout << "Please enter a positive integer for the # of epochs:" << endl;
@@ -33,7 +33,7 @@ int main() {
 		numEpochs = atoi(input.c_str());
 	}
 	cout << "Enter a number for the learning rate:" << endl;
-	getline(cin, input);
+	cin >> input;
 	learningRate = atof(input.c_str());
 	while (learningRate == 0) {
 		cout << "Please enter a number for the learning rate:" << endl;
@@ -41,9 +41,18 @@ int main() {
 		learningRate = atof(input.c_str());
 	}
 	
+	// Feed in initializer file into the neural network to set up the layers
 	initFile.open(initNetwork.c_str(), ifstream::in);
-	NeuralNetwork *myNetwork = new NeuralNetwork(initFile);
+	NeuralNetwork *myNetwork = new NeuralNetwork(initFile, numEpochs, learningRate);
+	
+	trainingFile.open(trainingSet.c_str(), ifstream::in);
+	myNetwork->train(trainingFile);
+	
+	outputFile.open(output.c_str(), ofstream::out);
+	myNetwork->saveWeights(outputFile);
+	
 	initFile.close();
-	cout << initNetwork << " " << trainingSet << " " << output << " " << numEpochs << " " << learningRate << endl;
+	trainingFile.close();
+	outputFile.close();
 	return 0;
 }
