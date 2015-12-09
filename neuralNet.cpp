@@ -58,6 +58,10 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 	inputFile >> drop;
 	for (int epoch = 0; epoch < numEpochs; epoch++) {
 		for (int exIter = 0; exIter < numExamples; exIter++) {
+			// fill deltas to 0 after each example
+			fill(hiddenDeltas.begin(), hiddenDeltas.end(), 0);
+			fill(outputDeltas.begin(), outputDeltas.end(), 0);
+			
 			// Get a single example: vector of inputs and outputs
 			std::vector <int> exampleYs;
 			double exX;
