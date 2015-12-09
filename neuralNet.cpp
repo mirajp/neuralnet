@@ -3,11 +3,6 @@
 // neuralNet.cpp
 
 #include "neuralNet.h"
-
-#include <vector>
-#include <iostream>
-#include <cstdio>
-
 #include <iomanip>
 #include <cmath>
 
@@ -20,7 +15,6 @@ NeuralNetwork::NeuralNetwork(std::ifstream &inputFile, int epochs, double rate) 
 	inputFile >> numHidden;
 	inputFile >> numOutput;
 	double weight = 0;
-	//std::cout << "numInput = " << numInput << ", numHidden = " << numHidden << ", numOutput = " << numOutput << std::endl;
 	
 	inputActivations.resize(numInput+1, 0);
 	hiddenActivations.resize(numHidden+1, 0);
@@ -31,7 +25,6 @@ NeuralNetwork::NeuralNetwork(std::ifstream &inputFile, int epochs, double rate) 
 	
 	hiddenDeltas.resize(numHidden+1, 0);
 	outputDeltas.resize(numOutput, 0);
-	std::cout << "Size of outputDeltas = " << outputDeltas.size() << std::endl;
 	
 	// numHidden lines with numInput+1 weights on each line
 	for (int hiddenIter = 0; hiddenIter < numHidden; hiddenIter++) {
@@ -56,19 +49,16 @@ NeuralNetwork::NeuralNetwork(std::ifstream &inputFile, int epochs, double rate) 
 }
 
 void NeuralNetwork::train(std::ifstream &inputFile) {
-	std::cout << "Inside train" << std::endl;
-	std::cout << "Inside train" << std::endl;
-	std::cout << "Inside train" << std::endl;
 	// Back-Prop-Learning pseudocode implementation
 	// This assumes the network's weights have been initialized, and a training file is fed in to train the weights
 	int numExamples;
+	int drop;
 	inputFile >> numExamples;
-    std::cout << "Numepochs = " << numEpochs << std::endl;
+	inputFile >> drop;
+	inputFile >> drop;
 	for (int epoch = 0; epoch < numEpochs; epoch++) {
 		for (int exIter = 0; exIter < numExamples; exIter++) {
 			// Get a single example: vector of inputs and outputs
-			std::cout << "Example # " << (exIter+1) << std::endl;
-			std::vector <double> exampleXs;
 			std::vector <int> exampleYs;
 			double exX;
 			int exY;
@@ -77,7 +67,6 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 				// To compute activations for layer 1 (input):
 				// Copy input vector of a single example to the input nodes of the network
 				inputActivations[inputIter+1] = exX;
-				exampleXs.push_back(exX);
 			}
 			for (int outputIter = 0; outputIter < numOutput; outputIter++) {
 				inputFile >> exY;
@@ -86,17 +75,18 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 			
 			// Propogate the inputs forward to compute outputs
 			// To compute activations for layer 2 (hidden):
-			for (int hiddenIter = 0; hiddenIter < numHidden; hiddenIter++) {
+			for (int hiddenIter = 1; hiddenIter <= numHidden; hiddenIter++) {
 				// Compute sum of weight of all input nodes to this node in the hidden layer * activation in the input layer
 				double sum = 0;
 				// total number of terms = number of input nodes + bias 
-				for (int inputIter = 0; inputIter <= numInput+1; inputIter++) {
-					sum += ((hiddenWeights[hiddenIter][inputIter])*inputActivations[inputIter]);
+				for (int inputIter = 0; inputIter <= numInput; inputIter++) {
+					sum += ((hiddenWeights[hiddenIter-1][inputIter])*inputActivations[inputIter]);
 				}
 				// Use the sum as input to jth node, and apply the activation function (sigmoid)
 				// Skip index 0 since it corresponds to -1 activation for the bias weight
-				hiddenActivations[hiddenIter+1] = sigmoid(sum);
+				hiddenActivations[hiddenIter] = sigmoid(sum);
 			}
+			
 			// To compute activations for layer 3 (output):
 			for (int outputIter = 0; outputIter < numOutput; outputIter++) {
 				double sum = 0;
@@ -106,36 +96,29 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 				outputActivations[outputIter] = sigmoid(sum);
 			}
 			
-			//std::cout << "Before outputDelta update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
 			// Propogate deltas backward from output layer to input layer
 			for (int outputIter = 0; outputIter < numOutput; outputIter++) {
-				//outputDeltas[outputIter] = derivSigmoid(outputActivations[outputIter])*(exampleYs[outputIter] - outputActivations[outputIter]);
 				outputDeltas[outputIter] = (outputActivations[outputIter]*(1-outputActivations[outputIter]))*(exampleYs[outputIter] - outputActivations[outputIter]);
-				//std::cout << "outputDelta[" << outputIter << "] = " << outputDeltas[outputIter] << std::endl;
 			}
 			
-			//std::cout << "Before hiddenDelta update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
 			// Propogate deltas for the hidden layer
 			for (int hiddenIter = 0; hiddenIter <= numHidden; hiddenIter++) {
 				double sum = 0;
 				for (int outputIter = 0; outputIter < numOutput; outputIter++) {
 					sum += (outputWeights[outputIter][hiddenIter] * outputDeltas[outputIter]);
 				}
-				hiddenDeltas[hiddenIter] = derivSigmoid(hiddenActivations[hiddenIter])*sum;
+				hiddenDeltas[hiddenIter] = (hiddenActivations[hiddenIter]*(1-hiddenActivations[hiddenIter]))*sum;
 			}
 			
 			// Update weights
-			//std::cout << "Before hiddenweight update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
-			for (int inputIter = 0; inputIter <= numInput; inputIter++) {
-				for (int hiddenIter = 0; hiddenIter < numHidden; hiddenIter++) {
-					hiddenWeights[hiddenIter][inputIter] = hiddenWeights[hiddenIter][inputIter] + (learningRate*inputActivations[inputIter]*hiddenDeltas[hiddenIter]);
+			for (int hiddenIter = 0; hiddenIter < numHidden; hiddenIter++) {
+				for (int inputIter = 0; inputIter <= numInput; inputIter++) {
+					// Don't count the bias's delta?
+					hiddenWeights[hiddenIter][inputIter] = hiddenWeights[hiddenIter][inputIter] + (learningRate*inputActivations[inputIter]*hiddenDeltas[hiddenIter+1]);
 				}
 			}
-			
-			//std::cout << "Before outputweight update: numHidd = " << numHidden << ", numOutput = " << numOutput << std::endl;
-			for (int hiddenIter = 0; hiddenIter <= numHidden; hiddenIter++) {
-				for (int outputIter = 0; outputIter < numOutput; outputIter++) {
-					//std::cout << "hiddenAct[0] = " << hiddenActivations[0] << std::endl;
+			for (int outputIter = 0; outputIter < numOutput; outputIter++) {
+				for (int hiddenIter = 0; hiddenIter <= numHidden; hiddenIter++) {
 					outputWeights[outputIter][hiddenIter] = outputWeights[outputIter][hiddenIter] + (learningRate*hiddenActivations[hiddenIter]*outputDeltas[outputIter]);
 				}
 			}
@@ -155,17 +138,12 @@ void NeuralNetwork::saveWeights(std::ofstream &outputFile) {
 	}
 	for (int outputIter = 0; outputIter < numOutput; outputIter++) {
 		for (int hiddenIter = 0; hiddenIter < numHidden; hiddenIter++) {	
-			outputFile << std::fixed << std::setprecision(3) << hiddenWeights[outputIter][hiddenIter] << " ";
+			outputFile << std::fixed << std::setprecision(3) << outputWeights[outputIter][hiddenIter] << " ";
 		}
-		outputFile << std::fixed << std::setprecision(3) << hiddenWeights[outputIter][numHidden] << std::endl;
+		outputFile << std::fixed << std::setprecision(3) << outputWeights[outputIter][numHidden] << std::endl;
 	}
 }
 
 double NeuralNetwork::sigmoid(double inputVal) {
 	return (1/(1+exp(-inputVal)));
 }
-
-double NeuralNetwork::derivSigmoid(double inputVal) {
-	return (sigmoid(inputVal)*(1-sigmoid(inputVal)));
-}
-

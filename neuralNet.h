@@ -32,9 +32,6 @@ class NeuralNetwork {
 		// activation function: sigmoid
 		double sigmoid(double inputVal);
 		
-		// derivative of activation function: derivSigmoid
-		double derivSigmoid(double inputVal);
-		
 		void train(std::ifstream &inputFile);
 		
 		void saveWeights(std::ofstream &outputFile);
