@@ -144,10 +144,68 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 				}
 			}
 		}
+		// Faster to have it in memory, but time is not a constraint so will just keep reading from file
 		inputFile.seekg(0, inputFile.beg);
 	}
 	// After # of epochs of training completed, return
 	return;
+}
+
+void NeuralNetwork::test(std::ifstream &inputFile) {
+	int numExamples;
+	int drop;
+	inputFile >> numExamples;
+	inputFile >> drop;
+	inputFile >> drop;
+	
+	for (int exIter = 0; exIter < numExamples; exIter++) {
+		// reset activation levels to 0 after each example
+		fill(inputActivations.begin(), inputActivations.end(), 0);
+		fill(hiddenActivations.begin(), hiddenActivations.end(), 0);
+		fill(outputActivations.begin(), outputActivations.end(), 0);
+		inputActivations[0] = -1;
+		hiddenActivations[0] = -1;
+		
+		// Get a single example: vector of inputs and outputs
+		std::vector <int> exampleYs;
+		double exX;
+		int exY;
+		// 0th index is activation value for bias weight = -1
+		for (int inputIter = 1; inputIter <= numInput; inputIter++) {
+			inputFile >> exX;
+			// To compute activations for layer 1 (input):
+			// Copy input vector of a single example to the input nodes of the network
+			inputActivations[inputIter] = exX;
+		}
+		for (int outputIter = 0; outputIter < numOutput; outputIter++) {
+			inputFile >> exY;
+			exampleYs.push_back(exY);
+		}
+		
+		// Propagate the inputs forward to compute outputs
+		// To compute activations for layer 2 (hidden):
+		for (int hiddenIter = 0; hiddenIter < numHidden; hiddenIter++) {
+			// Compute sum of weight of all input nodes to this node in the hidden layer * activation in the input layer
+			double sum = 0;
+			// total number of terms = number of input nodes + bias 
+			for (int inputIter = 0; inputIter <= numInput; inputIter++) {
+				sum += ((hiddenWeights[hiddenIter][inputIter])*inputActivations[inputIter]);
+			}
+			// Use the sum as input to jth node, and apply the activation function (sigmoid)
+			// Skip index 0 since it corresponds to -1 activation for the bias weight
+			hiddenActivations[hiddenIter+1] = sigmoid(sum);
+		}
+		// To compute activations for layer 3 (output):
+		for (int outputIter = 0; outputIter < numOutput; outputIter++) {
+			double sum = 0;
+			for (int hiddenIter = 0; hiddenIter <= numHidden; hiddenIter++) {
+				sum += ((outputWeights[outputIter][hiddenIter])*hiddenActivations[hiddenIter]);
+			}
+			outputActivations[outputIter] = sigmoid(sum);
+		}
+		
+		
+	}
 }
 
 void NeuralNetwork::saveWeights(std::ofstream &outputFile) {

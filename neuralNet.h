@@ -34,6 +34,8 @@ class NeuralNetwork {
 		
 		void train(std::ifstream &inputFile);
 		
+		void test(std::ifstream &inputFile);
+		
 		void saveWeights(std::ofstream &outputFile);
 };
 

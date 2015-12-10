@@ -44,15 +44,14 @@ int main() {
 	// Feed in initializer file into the neural network to set up the layers
 	initFile.open(initNetwork.c_str(), ifstream::in);
 	NeuralNetwork *myNetwork = new NeuralNetwork(initFile, numEpochs, learningRate);
+	initFile.close();
 	
 	trainingFile.open(trainingSet.c_str(), ifstream::in);
 	myNetwork->train(trainingFile);
+	trainingFile.close();
 	
 	outputFile.open(output.c_str(), ofstream::out);
 	myNetwork->saveWeights(outputFile);
-	
-	initFile.close();
-	trainingFile.close();
 	outputFile.close();
 	return 0;
 }
