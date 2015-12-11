@@ -158,6 +158,26 @@ void NeuralNetwork::test(std::ifstream &inputFile) {
 	inputFile >> drop;
 	inputFile >> drop;
 	
+	aCount.clear();
+	bCount.clear();
+	cCount.clear();
+	dCount.clear();
+	globalA = 0;
+	globalB = 0;
+	globalC = 0;
+	globalD = 0;
+	
+	for (int classIter = 0; classIter < numOutput; classIter++) {
+		aCount.push_back(0);
+		bCount.push_back(0);
+		cCount.push_back(0);
+		dCount.push_back(0);
+		accuracy.push_back(0);
+		precision.push_back(0);
+		recall.push_back(0);
+		f1.push_back(0);
+	}
+	
 	for (int exIter = 0; exIter < numExamples; exIter++) {
 		// reset activation levels to 0 after each example
 		fill(inputActivations.begin(), inputActivations.end(), 0);
@@ -204,8 +224,79 @@ void NeuralNetwork::test(std::ifstream &inputFile) {
 			outputActivations[outputIter] = sigmoid(sum);
 		}
 		
-		
+		analyzeResult(exampleYs);
 	}
+}
+
+void NeuralNetwork::analyzeResult(std::vector <int> &expectedOutput) {
+	for (int classIter = 0; classIter < numOutput; classIter++) {
+		double receivedOutput = outputActivations[classIter];
+		
+		if (receivedOutput >= 0.5) {
+			// round to an output of 1
+			if (expectedOutput[classIter] == 1) {
+				aCount[classIter]++;
+				globalA++;
+				//std::cout << "globalA = " << globalA << std::endl;
+			}
+			else {
+				bCount[classIter]++;
+				globalB++;
+			}
+		}
+		
+		else {
+			// round to output of 0
+			if (expectedOutput[classIter] == 1) {
+				cCount[classIter]++;
+				globalC++;
+			}
+			else {
+				dCount[classIter]++;
+				globalD++;
+				//std::cout << "globalD = " << globalD << std::endl;
+			}
+		}
+	}
+}
+
+void NeuralNetwork::saveResults(std::ofstream &outputFile) {
+	double microAcc, microPrec, microRecall, microF1, macroF1, macroAcc = 0, macroPrec = 0, macroRecall = 0;
+	for (int classIter = 0; classIter < numOutput; classIter++) {
+		accuracy[classIter] = (double) (aCount[classIter] + dCount[classIter])/(aCount[classIter] + bCount[classIter] + cCount[classIter] + dCount[classIter]);
+		macroAcc += accuracy[classIter];
+		
+		precision[classIter] = (double) (aCount[classIter])/(aCount[classIter] + bCount[classIter]);
+		macroPrec += precision[classIter];
+		
+		recall[classIter] = (double) (aCount[classIter])/(aCount[classIter] + cCount[classIter]);
+		macroRecall += recall[classIter];
+		
+		f1[classIter] = (double) (2*precision[classIter]*recall[classIter])/(precision[classIter] + recall[classIter]);
+		
+		//outputFile << std::fixed << std::setprecision(0) << aCount[classIter] << " " << std::fixed << std::setprecision(0) << bCount[classIter] << " " << std::fixed << std::setprecision(0) << cCount[classIter] << " " << std::fixed << std::setprecision(0) << dCount[classIter] << " " << std::fixed << std::setprecision(3) << accuracy[classIter] << " " << std::fixed << std::setprecision(3) << precision[classIter] << " " << std::fixed << std::setprecision(3) << recall[classIter] << " " << std::fixed << std::setprecision(3) << f1[classIter] << std::endl;
+		outputFile << std::fixed << std::setprecision(0) << aCount[classIter] <<
+		" " << std::fixed << std::setprecision(0) << bCount[classIter] <<
+		" " << std::fixed << std::setprecision(0) << cCount[classIter] <<
+		" " << std::fixed << std::setprecision(0) << dCount[classIter] <<
+		" " << std::fixed << std::setprecision(3) << accuracy[classIter] <<
+		" " << std::fixed << std::setprecision(3) << precision[classIter] <<
+		" " << std::fixed << std::setprecision(3) << recall[classIter] <<
+		" " << std::fixed << std::setprecision(3) << f1[classIter] << std::endl;
+	}
+	
+	microAcc = (double) (globalA + globalD)/(globalA + globalB + globalC + globalD);
+	microPrec = (double) (globalA)/(globalA + globalB);
+	microRecall = (double) (globalA)/(globalA + globalC);
+	microF1 = (double) (2*microPrec*microRecall)/(microPrec + microRecall);
+	
+	outputFile << std::fixed << std::setprecision(3) << microAcc << " " << std::fixed << std::setprecision(3) << microPrec << " " << std::fixed << std::setprecision(3) << microRecall << " " << std::fixed << std::setprecision(3) << microF1 << std::endl;
+	
+	macroAcc = (double) (macroAcc/numOutput);
+	macroPrec = (double) (macroPrec/numOutput);
+	macroRecall = (double) (macroRecall/numOutput);
+	macroF1 = (double) (2*macroPrec*macroRecall)/(macroPrec + macroRecall);
+	outputFile << std::fixed << std::setprecision(3) << macroAcc << " " << std::fixed << std::setprecision(3) << macroPrec << " " << std::fixed << std::setprecision(3) << macroRecall << " " << std::fixed << std::setprecision(3) << macroF1 << std::endl;
 }
 
 void NeuralNetwork::saveWeights(std::ofstream &outputFile) {

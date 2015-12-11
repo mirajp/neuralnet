@@ -8,6 +8,8 @@
 #include <string>
 #include "neuralNet.h"
 
+using namespace std;
+
 int main() {
 	int numEpochs = 0;
 	double learningRate = 0;
@@ -33,7 +35,7 @@ int main() {
 	testFile.close();
 	
 	outputFile.open(output.c_str(), ofstream::out);
-	myNetwork->saveWeights(outputFile);
+	myNetwork->saveResults(outputFile);
 	outputFile.close();
 	return 0;
 }

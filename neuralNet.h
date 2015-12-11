@@ -23,6 +23,11 @@ class NeuralNetwork {
 		// size of hiddenWeights: Nh x Ni+1, size of outputWeights: No x Nh + 1
 		std::vector <std::vector <double> > hiddenWeights, outputWeights;
 		
+		// These vectors hold counts for each class
+		std::vector <int> aCount, bCount, cCount, dCount;
+		int globalA, globalB, globalC, globalD;
+		std::vector <double> accuracy, precision, recall, f1;
+		
 		// activations of each node
 		std::vector <double> inputActivations, hiddenActivations, outputActivations;
 		
@@ -35,6 +40,10 @@ class NeuralNetwork {
 		void train(std::ifstream &inputFile);
 		
 		void test(std::ifstream &inputFile);
+		
+		void analyzeResult(std::vector <int> &expectedOutput);
+		
+		void saveResults(std::ofstream &outputFile);
 		
 		void saveWeights(std::ofstream &outputFile);
 };
