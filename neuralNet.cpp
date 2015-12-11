@@ -51,13 +51,32 @@ NeuralNetwork::NeuralNetwork(std::ifstream &inputFile, int epochs, double rate) 
 void NeuralNetwork::train(std::ifstream &inputFile) {
 	// Back-Prop-Learning pseudocode implementation
 	// This assumes the network's weights have been initialized, and a training file is fed in to train the weights
-	for (int epoch = 0; epoch < numEpochs; epoch++) {
-		int numExamples;
-		int drop;
-		inputFile >> numExamples;
-		inputFile >> drop;
-		inputFile >> drop;
+	
+	std::vector <std::vector <double> > exampleXs, exampleYs;
+	int numExamples, drop;
+	double exX, exY;
+	
+	inputFile >> numExamples;
+	inputFile >> drop;
+	inputFile >> drop;
+	
+	for (int exIter = 0; exIter < numExamples; exIter++) {
+		std::vector <double> trainInputs;
+		for (int inputIter = 0; inputIter < numInput; inputIter++) {
+			inputFile >> exX;
+			trainInputs.push_back(exX);
+		}
+		exampleXs.push_back(trainInputs);
 		
+		std::vector <double> trainOutputs;
+		for (int outputIter = 0; outputIter < numOutput; outputIter++) {
+			inputFile >> exY;
+			trainOutputs.push_back(exY);
+		}
+		exampleYs.push_back(trainOutputs);
+	}
+	
+	for (int epoch = 0; epoch < numEpochs; epoch++) {
 		for (int exIter = 0; exIter < numExamples; exIter++) {
 			// reset deltas and activation levels to 0 after each example
 			fill(hiddenDeltas.begin(), hiddenDeltas.end(), 0);
@@ -68,20 +87,9 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 			inputActivations[0] = -1;
 			hiddenActivations[0] = -1;
 			
-			// Get a single example: vector of inputs and outputs
-			std::vector <int> exampleYs;
-			double exX;
-			int exY;
 			// 0th index is activation value for bias weight = -1
 			for (int inputIter = 1; inputIter <= numInput; inputIter++) {
-				inputFile >> exX;
-				// To compute activations for layer 1 (input):
-				// Copy input vector of a single example to the input nodes of the network
-				inputActivations[inputIter] = exX;
-			}
-			for (int outputIter = 0; outputIter < numOutput; outputIter++) {
-				inputFile >> exY;
-				exampleYs.push_back(exY);
+				inputActivations[inputIter] = exampleXs[exIter][inputIter-1];
 			}
 			
 			// Propagate the inputs forward to compute outputs
@@ -113,7 +121,7 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 			}
 			// Propagate deltas backward from output layer to input layer
 			for (int outputIter = 0; outputIter < numOutput; outputIter++) {
-				outputDeltas[outputIter] = (outputActivations[outputIter]*(1-outputActivations[outputIter]))*(exampleYs[outputIter] - outputActivations[outputIter]);
+				outputDeltas[outputIter] = (outputActivations[outputIter]*(1-outputActivations[outputIter]))*(exampleYs[exIter][outputIter] - outputActivations[outputIter]);
 				//std::cout << "outputDeltas[" << outputIter << "] = " << outputDeltas[outputIter] << std::endl;
 			}
 			
