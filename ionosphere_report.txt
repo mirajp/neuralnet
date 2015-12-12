@@ -1,0 +1,73 @@
+Dataset: Johns Hopkins University Ionosphere database
+
+Description: Classify data from radar of the ionosphere; the inputs/attributes are from 17 pulsations, each having 2 attributes.
+In order to investigate proporties of the ionosphere, the signals have to be separated on whether or not there are free electrons
+carrying useful information (output = 1 indicates good signal = electrons present).
+
+Parameters: 14 hidden nodes, 100 epochs, learning rate of 0.1
+
+Textfiles attached:
+"ionosphere.names" - default data descriptor file
+"ionosphere.test"  - 321 examples comprise the test set
+"ionosphere.train" - 30 examples comprise the training set
+"ionosphere_34_14_trial221_1.init" - the initial (weights) network file that led to the best results (for me)
+"ionosphere_34_14_trial221_1.init_100_10.network" - the trained network created using the attached initial network and training set, and 100 epochs with 0.1 learning rate
+"ionosphere_34_14_trial221_1.init_100_10.results" - the results file of using the trained network on the test set
+
+How the initial weights were generated:
+Using the 2/3rd rule for determining a good number of hidden nodes for a neural network, I assumed that perhaps 20 nodes
+would be optimal, so I generated 100 sample init files for networks with 1-20 hidden nodes, and test all the networks with 
+rate = 0.1, and number of epochs = 100. The weights in these init files were all randomly generated, so the probability 
+of finding a good initial set up in 1 trial is too low, thus 100 for each size were generated.
+The results were as so:
+name	microacc	microprec	microrecall	microf1	macroacc	macroprec	macrorecall	macrof1
+ionosphere_34_13_trial32_1.init	0.844	0.825	0.967	0.89	0.844	0.825	0.967	0.89
+ionosphere_34_19_trial36_1.init	0.841	0.819	0.971	0.889	0.841	0.819	0.971	0.889
+ionosphere_34_7_trial9_1.init	0.844	0.833	0.952	0.889	0.844	0.833	0.952	0.889
+
+The first integer after "ionosphere" indicates the number of inputs, the second number indicates number of hidden nodes,
+followed by trial number, and the number of outputs. The number of inputs is constant at 34, and outputs is constant at 1.
+Noticing that two networks with 13 and 19 hidden nodes did pretty good, I decided to run the experiment again, with 300 trials
+for networks with a hidden layer of size 10-35. The paper "Classification of radar returns from the ionosphere using neural networks"
+on https://archive.ics.uci.edu/ml/datasets/Ionosphere is said to use the data with a neural network with varying hidden layer size
+from 0 to 15, but I couldn't find what size they determined to be the best, or how they determined initial weights.
+
+The 2nd run:
+name	microacc	microprec	microrecall	microf1	macroacc	macroprec	macrorecall	macrof1
+ionosphere_34_14_trial221_1.init	0.86	0.842	0.967	0.9	0.86	0.842	0.967	0.9
+ionosphere_34_10_trial30_1.init	0.847	0.818	0.986	0.894	0.847	0.818	0.986	0.894
+ionosphere_34_15_trial171_1.init	0.847	0.826	0.971	0.893	0.847	0.826	0.971	0.893
+
+To further refine this, I decided to limit the hidden layer size to 10-15 nodes, and try 1000 trials in each.
+3rd run:
+name	microacc	microprec	microrecall	microf1	macroacc	macroprec	macrorecall	macrof1
+ionosphere_34_11_trial951_1.init	0.857	0.845	0.957	0.897	0.857	0.845	0.957	0.897
+ionosphere_34_11_trial63_1.init	0.85	0.838	0.957	0.893	0.85	0.838	0.957	0.893
+ionosphere_34_13_trial234_1.init	0.844	0.831	0.957	0.889	0.844	0.831	0.957	0.889
+
+This 3rd run produced the highest microf1 score and 2nd highest macrof1 score using the init file:
+ionosphere_34_11_trial951_1.init
+indicating 11 hidden nodes, and trial number 951.
+
+Combining the top 3 from each trail: I tried 100 epochs with learning rate 0.05:
+name	microacc	microprec	microrecall	microf1	macroacc	macroprec	macrorecall	macrof1
+ionosphere_34_14_trial221_1.init	0.835	0.82	0.957	0.884	0.835	0.82	0.957	0.884
+ionosphere_34_10_trial768_1.init	0.826	0.798	0.981	0.88	0.826	0.798	0.981	0.88
+ionosphere_34_15_trial171_1.init	0.819	0.806	0.952	0.873	0.819	0.806	0.952	0.873
+
+Combining the top 3 from each trial: I tried 200 epochs with learning rate 0.05:
+name	microacc	microprec	microrecall	microf1	macroacc	macroprec	macrorecall	macrof1
+ionosphere_34_14_trial221_1.init	0.857	0.839	0.967	0.898	0.857	0.839	0.967	0.898
+ionosphere_34_11_trial951_1.init	0.857	0.845	0.957	0.897	0.857	0.845	0.957	0.897
+ionosphere_34_10_trial30_1.init	0.847	0.818	0.986	0.894	0.847	0.818	0.986	0.894
+
+I noticed that the init file with 14 hidden nodes, trial #221, does the best, but did slightly better with learning rate 0.1
+ionosphere_34_14_trial221_1.init	0.86	0.842	0.967	0.9	0.86	0.842	0.967	0.9
+So I'll try it with 200 epochs and learning rate = 0.1:
+ionosphere_34_14_trial221_1.init	0.832	0.825	0.943	0.88	0.832	0.825	0.943	0.88
+
+The f1 score and accuracy both went down, so I'll stop at 100 epochs with learning rate of 0.1
+
+Source of dataset: https://archive.ics.uci.edu/ml/datasets/Ionosphere
+I found the data set by browsing the UCI machine learning data set repository for numerical, continuous data, with binary classification.
+The data itself was collected by a radar system (with 16 antennas) in Goose Bay, Labrador.
