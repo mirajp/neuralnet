@@ -152,8 +152,6 @@ void NeuralNetwork::train(std::ifstream &inputFile) {
 				}
 			}
 		}
-		// Faster to have it in memory, but time is not a constraint so will just keep reading from file
-		inputFile.seekg(0, inputFile.beg);
 	}
 	// After # of epochs of training completed, return
 	return;
